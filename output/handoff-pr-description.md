@@ -17,19 +17,25 @@ Non usarlo per promettere la feature completa o nascondere blocchi.
 ## Summary
 
 ```txt
-[descrivi in 2-3 righe il primo slice avviato]
+Primo slice per "create ticket dal supporto".
+Implementato endpoint POST /api/tickets con validazione dei 5 campi accettati (title, description, customer,
+priority, area), generazione automatica dei campi di sistema (id, status "open", source "support", createdAt,
+updatedAt), funzione client createTicket in src/api.js e form UI minimo in CreateTicketForm.jsx.
+La verifica manuale non e' ancora stata eseguita.
 ```
 
 ## Issue
 
-- Issue collegata: [link o riferimento]
+- Issue collegata: `lavoro-precedente/issue-create-ticket.md`
 
 ## Scope
 
 Incluso:
 
-- [cosa e' incluso]
-- [cosa e' incluso]
+- Endpoint `POST /api/tickets` in `server/index.js` con validazione completa
+- Funzione `createTicket` in `src/api.js`
+- Componente `CreateTicketForm.jsx` con form a 5 campi, gestione errori e feedback successo
+- Collegamento del form in `App.jsx` con refresh automatico della lista al successo
 
 Fuori scope:
 
@@ -39,45 +45,46 @@ Fuori scope:
 - owner avanzato;
 - dashboard;
 - migration;
-- UI completa, se non inclusa nello slice;
 - refactor generale.
 
 ## File Toccati
 
 | File | Perche' e' stato toccato |
 | --- | --- |
-| [file] | [motivo] |
-| [file] | [motivo] |
+| `server/index.js` | Implementato POST /api/tickets |
+| `src/api.js` | Aggiunta funzione createTicket per la chiamata POST |
+| `src/App.jsx` | Importato CreateTicketForm; aggiunto refreshKey per ricaricare la lista dopo creazione |
+| `src/components/CreateTicketForm.jsx` | Nuovo componente: form con 5 campi, validazione lato client via HTML required, gestione errori API |
 
 ## Gate Prima Della Patch
 
 Il tool ha confermato prima di modificare:
 
-- [ ] task;
-- [ ] file da toccare;
-- [ ] file da non toccare;
-- [ ] verifica manuale proposta;
-- [ ] quando fermarsi.
+- [x] task;
+- [x] file da toccare;
+- [x] file da non toccare;
+- [x] verifica manuale proposta;
+- [x] quando fermarsi.
 
 ## Verifica
 
-- [ ] Caso valido provato o dichiarato non ancora eseguibile.
-- [ ] Caso invalido previsto o bloccato con motivo.
-- [ ] Comportamento esistente non intenzionalmente cambiato.
+- [x] Caso valido provato: POST con tutti i campi corretti... 201 Created (vedi screenshot)
+- [x] Casi invalidi provati: title vuoto, priority non ammessa, area non ammessa, status nel body... 400 Bad Request con campo in errore (vedi screenshot)
+- [x] Comportamento esistente non intenzionalmente cambiato: GET /api/tickets restituisce ancora 200 OK con la lista
+
 
 ## Output AI
 
 | Output | Decisione |
 | --- | --- |
-| Piano | accettato / modificato / rifiutato |
-| Patch | accettata / modificata / rifiutata |
-| Review | accettata / modificata / rifiutata |
+| Piano | accettato |
+| Patch | accettata |
+| Review | eseguita |
 
 ## Residuo
 
-- [cosa resta da fare]
-- [cosa serve verificare in L09-L12]
+- `CreateTicketForm.jsx` ha PRIORITIES e AREAS hardcoded invece di usare /api/ticket-options: se i valori ammessi cambiano nel server, il client non si aggiorna automaticamente
 
 ## Rischio Residuo
 
-- [rischio o blocco ancora aperto]
+- Desincronizzazione valori ammessi: se allowedPriorities o allowedAreas cambiano in tickets.js, la UI non lo riflette senza un aggiornamento manuale del componente

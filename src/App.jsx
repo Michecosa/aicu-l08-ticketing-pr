@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchOpenTickets } from "./api.js";
+import CreateTicketForm from "./components/CreateTicketForm.jsx";
 import TicketList from "./components/TicketList.jsx";
 
 export default function App() {
   const [tickets, setTickets] = useState([]);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const forceEmpty = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -37,7 +39,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [forceEmpty]);
+  }, [forceEmpty, refreshKey]);
 
   return (
     <main className="app-shell">
@@ -48,6 +50,8 @@ export default function App() {
         </div>
         <span className="environment-badge">Modulo 02 - Lab 08</span>
       </header>
+
+      <CreateTicketForm onSuccess={() => setRefreshKey((k) => k + 1)} />
 
       {status === "loading" && <p className="state-message">Caricamento ticket...</p>}
       {status === "error" && <p className="state-message state-message--error">{error}</p>}
