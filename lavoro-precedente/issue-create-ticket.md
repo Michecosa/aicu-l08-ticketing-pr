@@ -10,9 +10,10 @@ Serve creare ticket dal supporto.
 
 - Siamo in un applicazione SPA in React con JavaScript dedicata alla gestione di ticket
 - L'applicazione contiene ticket e ne consente la creazione da parte di utenti generici
-- NON hai ancora accesso all'applicazione: siamo in una fase precedente di analisi
-- La struttura base del ticket (titolo e descrizione) è identica per tutti i ruoli
-- I campi obbligatori di un ticket sono titolo e descrizione 
+- La struttura reale del ticket include: title, description, customer, priority, area (campi accettati); id, status, source, createdAt, updatedAt (campi generati)
+- I valori ammessi per priority sono definiti in `allowedPriorities`: Alta, Media, Bassa
+- I valori ammessi per area sono definiti in `allowedAreas`: Billing, Accessi, Comunicazioni, Tecnico
+- source è sempre "support" per le richieste dal canale supporto; non viene inserito dal client
 
 ## Assunzioni (Assumptions)
 
@@ -44,11 +45,13 @@ Permettere a un utente con ruolo Supporto di compilare e inviare il form di crea
 
 ## Criteri Di Accettazione (Acceptance Criteria)
 
-1. Compilazione e Validazione dei Campi Obbligatori: Il sistema deve mostrare un form con i campi "Titolo" e "Descrizione". Entrambi i campi devono essere obbligatori. Se l'utente tenta di inviare il form lasciando uno o entrambi i campi vuoti, l'invio deve essere bloccato e deve comparire un messaggio di errore di validazione specifico per il campo mancante.
+1. Compilazione e Validazione dei Campi Obbligatori: Il sistema deve mostrare un form con i campi "Titolo", "Descrizione", "Cliente", "Priorità" e "Area". Tutti i campi devono essere obbligatori. Se l'utente tenta di inviare il form lasciando uno o più campi vuoti, l'invio deve essere bloccato e deve comparire un messaggio di errore di validazione specifico per il campo mancante.
 
-2. Tracciamento del Ruolo (Supporto): Al momento del salvataggio del ticket, il sistema deve associare automaticamente e correttamente l'attributo/etichetta "Supporto" al ticket, senza che l'utente debba selezionarlo manualmente.
+2. Validazione dei Valori Ammessi: Il campo "Priorità" accetta solo i valori Alta, Media, Bassa. Il campo "Area" accetta solo i valori Billing, Accessi, Comunicazioni, Tecnico. Un valore fuori da questi insiemi deve produrre errore 400 con indicazione del campo e dei valori ammessi.
 
-3. Una volta inviato il form con dati validi, l'applicazione deve mostrare un feedback visivo di successo (es. un messaggio temporaneo o un banner) e resettare i campi del form / reindirizzare l'utente". Sposta il dettaglio del payload/salvataggio nelle note tecniche.
+3. Tracciamento del Canale (Supporto): Al momento del salvataggio del ticket, il sistema deve associare automaticamente il campo `source: "support"` al ticket, senza che l'utente debba selezionarlo manualmente.
+
+4. Una volta inviato il form con dati validi, l'applicazione deve mostrare un feedback visivo di successo (es. un messaggio temporaneo o un banner) e resettare i campi del form / reindirizzare l'utente.
 
 ## Piano Di Verifica Manuale (Manual Test Plan)
 
@@ -70,8 +73,8 @@ Permettere a un utente con ruolo Supporto di compilare e inviare il form di crea
 
     - Risultato atteso: Il form viene inviato con successo, viene mostrato un feedback di conferma e il ticket viene salvato nel sistema. Verificare tramite i DevTools del browser che la richiesta di creazione inviata contenga il flag/attributo corretto
 
-## Note Per L06
+## Note Per L06 - Risolte
 
-- [quale payload andra' chiarito]
-- [quale errore andra' chiarito]
-- [quale campo dati andra' deciso]
+- Payload chiarito: title, description, customer, priority, area (vedi contract-sketch).
+- Errori chiariti: 400 per campo vuoto, 400 per priority/area fuori dai valori ammessi, 400 per campo generato inviato come input.
+- Campi decisi: priority e area hanno valori ammessi fissi; source e updatedAt sono generati automaticamente.
