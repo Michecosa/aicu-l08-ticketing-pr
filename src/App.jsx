@@ -1,0 +1,57 @@
+import { useEffect, useMemo, useState } from "react";
+import { fetchOpenTickets } from "./api.js";
+import TicketList from "./components/TicketList.jsx";
+
+export default function App() {
+  const [tickets, setTickets] = useState([]);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+
+  const forceEmpty = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("empty") === "true";
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadTickets() {
+      try {
+        setStatus("loading");
+        const data = await fetchOpenTickets({ empty: forceEmpty });
+
+        if (!ignore) {
+          setTickets(data);
+          setStatus("ready");
+        }
+      } catch (fetchError) {
+        if (!ignore) {
+          setError(fetchError.message);
+          setStatus("error");
+        }
+      }
+    }
+
+    loadTickets();
+
+    return () => {
+      ignore = true;
+    };
+  }, [forceEmpty]);
+
+  return (
+    <main className="app-shell">
+      <header className="app-header">
+        <div>
+          <p className="eyebrow">Support Ops</p>
+          <h1>Dashboard ticket</h1>
+        </div>
+        <span className="environment-badge">Modulo 02 - Lab 08</span>
+      </header>
+
+      {status === "loading" && <p className="state-message">Caricamento ticket...</p>}
+      {status === "error" && <p className="state-message state-message--error">{error}</p>}
+      {status === "ready" && <TicketList tickets={tickets} />}
+    </main>
+  );
+}
