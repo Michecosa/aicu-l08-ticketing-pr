@@ -44,7 +44,7 @@ Diventa candidato solo se:
 | --- | --- | --- | --- |
 | `server/index.js` | repo | La rotta POST /api/tickets ritorna 501 NOT_IMPLEMENTED | ammesso |
 | `src/api.js` | studente | Manca una funzione createTicket per fare la POST | ammesso |
-| `server/data/tickets.js` | studente | Contiene l'array `tickets` esportato | vietato |
+| `server/data/tickets.js` | AI | Esporta `tickets`, `allowedPriorities` e `allowedAreas`; non va modificato ma va importato in lettura da index.js per la validazione | ammesso (lettura) |
 | `src/App.jsx` (e componenti UI) | repo | Il main file React dove andrà collegato il form di inserimento ticket | ammesso |
 
 ## File Ammessi Per Il Primo Slice
@@ -52,11 +52,11 @@ Diventa candidato solo se:
 - `server/index.js`
 - `src/api.js`
 - Area `src/components/` (nuovo form UI o aggiunte ad `App.jsx`)
+- `server/data/tickets.js` - solo lettura: importare `allowedPriorities` e `allowedAreas` per la validazione; non modificare.
 
 ## File Vietati O Fuori Scope
 
 - Modelli DB o file di migration - non ci sono database persistenti in uso.
-- `server/data/tickets.js` - Non va modificato il file. L'array esportato verrà aggiornato in memoria tramite `push()` direttamente in `index.js`.
 - Aree di Auth / Login - esplicitamente fuori scope (issue).
 - Upload di allegati - esplicitamente fuori scope.
 - Logica di assegnazione owner / dashboard avanzata - fuori scope.
@@ -64,24 +64,31 @@ Diventa candidato solo se:
 ## Primo Slice Proposto
 
 ```txt
-Implementare nel server l'endpoint POST `/api/tickets` accettando solo `title` e `description` e validandoli.
+Implementare nel server l'endpoint POST `/api/tickets` accettando title, description, customer, priority e area,
+validando che i campi siano non vuoti e che priority sia in allowedPriorities e area in allowedAreas
+(importati in lettura da server/data/tickets.js).
+Generare automaticamente id, status "open", source "support", createdAt e updatedAt.
 Creare nel client una funzione in `src/api.js` per chiamare la POST.
-Costruire un form minimo nella UI per inserire il ticket e mostrare gli errori di validazione (400) o il successo (201).
+Costruire un form minimo nella UI per inserire il ticket con i cinque campi e mostrare gli errori di validazione (400) o il successo (201).
 ```
 
 ## Perche' Questo Slice E' Piccolo
 
-- Si occupa solo di due campi (`title`, `description`).
+- Si occupa di cinque campi accettati (title, description, customer, priority, area); i valori ammessi per priority e area sono già definiti nel file dati esistente.
 - Non necessita di sistemi di auth o ruoli reali.
-- Sfrutta il database in memory esistente (array `tickets`).
+- Sfrutta il database in memory esistente (array `tickets`) e le costanti già esportate.
 
 ## Verifica Manuale Proposta
 
 ```txt
-Azione 1: Compilare il form con titolo vuoto o descrizione vuota e inviare.
-Risultato 1: Il form deve bloccarsi e mostrare il messaggio d'errore (400 Bad Request).
-Azione 2: Compilare il form correttamente e inviare.
-Risultato 2: Ritorno 201 Created, ticket aggiunto all'elenco e form resettato.
+Azione 1: Compilare il form con title vuoto e inviare.
+Risultato 1: 400 Bad Request, campo title segnalato.
+Azione 2: Inviare priority con valore non ammesso (es. "Critica").
+Risultato 2: 400 Bad Request, campo priority con valori ammessi.
+Azione 3: Inviare area con valore non ammesso (es. "Sconosciuta").
+Risultato 3: 400 Bad Request, campo area con valori ammessi.
+Azione 4: Compilare tutti i campi correttamente e inviare.
+Risultato 4: 201 Created, ticket aggiunto all'elenco, source "support" generato, form resettato.
 ```
 
 ## Stop Condition
